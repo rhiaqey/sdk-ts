@@ -9,7 +9,7 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
   entry: './src/index.ts',
   output: {
     filename: 'sdk.js',
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'dist'),
     library: "RhiaqeySDK",
     libraryTarget: 'umd',
     // libraryExport: 'default',  // export the default as window.MyClass
