@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/build/sdk.js"></script>
+    <script>
+
+        let connection = new RhiaqeySDK.WebsocketConnection({
+            host: 'https://hub.demo.prod.cloud.rhiaqey.com',
+            channels: [ 'iss' ],
+            apiKey: 'OhXKjfehPawLAtgZFRASQbMGwiddzqKpMqwVMxruaufhzlkYViAGWKBNxUcueYib'
+        });
+
+        connection.dataStream().subscribe((message) => {
+            console.log('>> message arrived', message);
+        });
+
+        connection.connect();
+
+    </script>
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
