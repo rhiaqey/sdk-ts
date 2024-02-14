@@ -20,7 +20,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.23.9",
     "@types/jest": "^29.5.12",
-    "@types/ws": "^8.5.4",
+    "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "babel-eslint": "^10.1.0",
