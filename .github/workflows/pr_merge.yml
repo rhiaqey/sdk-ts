@@ -59,4 +59,4 @@ jobs:
           git tag
           git push origin v$VERSION
         env:
-         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+         NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH }}
