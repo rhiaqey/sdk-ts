@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - master
+      - setup-merge-workflow
     paths-ignore:
       - README.md
       - .gitignore
-      - .github/**
 
 env:
   CI: true
@@ -39,8 +39,20 @@ jobs:
         run: |
           make test
 
-      #- name: NPM publish
-        #run: |
-         # npm publish
-        #env:
-         # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: NPM publish
+        run: |
+          npm version patch --json -m "Release %s
+
+          [skip ci]
+          "
+
+          VERSION="$(cat package.json | jq -r '.version')"
+
+          # npm publish
+  
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag $VERSION
+          git push origin $VERSION
+        env:
+         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
