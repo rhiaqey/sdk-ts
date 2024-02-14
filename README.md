@@ -9,9 +9,9 @@ https://www.npmjs.com/package/@rhiaqey/sdk-ts
 ## CDN
 
 ```
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.4/build/sdk.js
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/build/sdk.js
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/build/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.6/dist/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/dist/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/sdk.js
 ```
 
 ## Example
