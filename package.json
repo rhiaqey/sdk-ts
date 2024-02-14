@@ -2,8 +2,8 @@
   "name": "@rhiaqey/sdk-ts",
   "version": "1.0.5",
   "description": "Rhiaqey SDK for clients",
-  "main": "build/sdk.js",
-  "types": "build/types/index.d.ts",
+  "main": "dist/sdk.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "webpack && tsc",
     "test": "jest --silent",
