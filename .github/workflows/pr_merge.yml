@@ -52,7 +52,6 @@ jobs:
           VERSION="$(cat package.json | jq -r '.version')"
 
           # npm publish
-          git tag $VERSION
           git push origin $VERSION
         env:
          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
