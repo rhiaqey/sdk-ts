@@ -43,9 +43,14 @@ jobs:
           make test
 
       - name: NPM publish
-        run: |          
+        run: |
           git config user.name "GitHub Actions"
           git config user.email "github-actions@users.noreply.github.com"
+          
+          
+          git tag
+          git status
+          cat package.json
 
           npm version patch --json -m "Release %s
 
