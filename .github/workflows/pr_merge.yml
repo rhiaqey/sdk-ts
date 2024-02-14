@@ -47,6 +47,9 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "github-actions@users.noreply.github.com"
           
+          GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+          
+          echo "Current branch $GIT_BRANCH"
           
           git tag
           git status
@@ -65,5 +68,6 @@ jobs:
           git status
           cat package.json
           git push origin v$VERSION
+          git push origin $GIT_BRANCH
         env:
          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH }}
