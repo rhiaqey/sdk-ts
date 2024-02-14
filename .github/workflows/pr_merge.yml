@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - README.md
+      - .gitignore
+      - .github/**
+
+env:
+  CI: true
 
 jobs:
-  publish:
+  Publish:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

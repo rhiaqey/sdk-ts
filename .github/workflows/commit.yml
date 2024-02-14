@@ -2,8 +2,11 @@ name: Commit
 
 on: push
 
+env:
+  CI: true
+
 jobs:
-  ci:
+  CI:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -22,7 +25,6 @@ jobs:
       - name: NPM install
         run: |
           npm install
-          make test
           make prod
 
       - name: NPM test

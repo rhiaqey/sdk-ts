@@ -24,3 +24,4 @@ yarn-error.log*
 
 # Build
 build
+*.tgz
