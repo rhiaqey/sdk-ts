@@ -12,6 +12,9 @@ on:
 env:
   CI: true
 
+permissions:
+  contents: write
+
 jobs:
   Publish:
     runs-on: ${{ matrix.os }}
