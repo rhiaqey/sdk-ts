@@ -57,6 +57,6 @@ jobs:
           # npm publish
 
           git tag
-          git push origin $VERSION
+          git push origin v$VERSION
         env:
          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
