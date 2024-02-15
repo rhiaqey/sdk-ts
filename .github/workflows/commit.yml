@@ -8,6 +8,7 @@ on:
 
 env:
   CI: true
+  CARGO_TERM_COLOR: always
 
 jobs:
   CI:
