@@ -30,8 +30,9 @@ jobs:
       - name: NPM install
         run: |
           npm install
-          make prod
+          npm run build
+          npm pack
 
       - name: NPM test
         run: |
-          make test
+          npm run test
