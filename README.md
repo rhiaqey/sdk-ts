@@ -1,5 +1,7 @@
 # RhiaqeySDK
 
+![sdk-ts](https://github.com/rhiaqey/sdk-ts/actions/workflows/commit.yml/badge.svg)
+
 ## NPM
 
 ```
