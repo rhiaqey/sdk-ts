@@ -3,7 +3,7 @@ export enum ClientMessageType {
     Subscribed = 1,
     Data = 10,
     Ping = 100,
-};
+}
 
 export class ClientMessage<T = unknown> {
     // required

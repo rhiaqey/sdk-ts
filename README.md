@@ -1,6 +1,6 @@
 # RhiaqeySDK
 
-![sdk-ts](https://github.com/rhiaqey/sdk-ts/actions/workflows/commit.yml/badge.svg)
+![sdk-ts](https://github.com/rhiaqey/sdk-ts/actions/workflows/pr_merge.yml/badge.svg)
 
 ## NPM
 
@@ -11,9 +11,9 @@ https://www.npmjs.com/package/@rhiaqey/sdk-ts
 ## CDN
 
 ```
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.6/dist/sdk.js
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/dist/sdk.js
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.10/dist/umd/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/dist/umd/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/umd/sdk.js
 ```
 
 ## Example

@@ -2,10 +2,10 @@
   "name": "@rhiaqey/sdk-ts",
   "version": "1.0.9",
   "description": "Rhiaqey SDK for clients",
-  "main": "dist/sdk.js",
+  "main": "dist/umd/sdk.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "build": "webpack && tsc",
+    "build": "webpack --mode production && tsc",
     "test": "jest --silent",
     "coverage": "npm run test -- --coverage",
     "prepare": "npm run build",
