@@ -12,7 +12,7 @@ if (typeof process !== 'undefined' && process.release.name === 'node') {
 export type WebsocketConnectionOptions = {
     host: string;
     apiKey: string;
-    channels: string[];
+    channels: string | string[];
     env?: 'dev' | 'prod'
 };
 
@@ -68,6 +68,7 @@ export class WebsocketConnection {
     protected normalize_endpoint(options: WebsocketConnectionOptions): string {
         let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
 
+        // extract host
         if (options.host.startsWith('http://')) {
             endpoint += options.host.substring(8);
         } else if (options.host.startsWith('https://')) {
@@ -80,12 +81,17 @@ export class WebsocketConnection {
             endpoint += options.host;
         }
 
+        // ensure suffix is correct
         if (!endpoint.endsWith('/ws')) {
             endpoint += '/ws'
         }
 
+        // pass api key directly
         endpoint += `?api_key=${options.apiKey}`;
-        endpoint += `&channels=${options.channels.join(',')}`;
+
+        // normalize channels
+        const channels = typeof options.channels === 'string' ? options.channels : options.channels.join(',');
+        endpoint += `&channels=${channels}`;
 
         return endpoint;
     }
