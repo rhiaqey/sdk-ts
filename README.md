@@ -22,7 +22,8 @@ https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/umd/sdk.js
 let connection = new RhiaqeySDK.WebsocketConnection({
     host: 'https://hub.demo.prod.cloud.rhiaqey.com',
     channels: [ 'some_channel' ],
-    apiKey: 'strong_api_key'
+    apiKey: 'strong_api_key',
+    apiHost: 'localhost:3333'
 });
 
 connection.connect();
