@@ -11,7 +11,7 @@ https://www.npmjs.com/package/@rhiaqey/sdk-ts
 ## CDN
 
 ```
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.10/dist/umd/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.12/dist/umd/sdk.js
 https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/dist/umd/sdk.js
 https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/umd/sdk.js
 ```

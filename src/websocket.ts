@@ -12,6 +12,7 @@ if (typeof process !== 'undefined' && process.release.name === 'node') {
 export type WebsocketConnectionOptions = {
     host: string;
     apiKey: string;
+    apiHost: string;
     channels: string | string[];
     env?: 'dev' | 'prod'
 };
@@ -86,11 +87,14 @@ export class WebsocketConnection {
             endpoint += '/ws'
         }
 
-        // pass api key directly
+        // pass api details directly
         endpoint += `?api_key=${options.apiKey}`;
+        endpoint += `&host=${options.apiHost}`;
 
         // normalize channels
-        const channels = typeof options.channels === 'string' ? options.channels : options.channels.join(',');
+        const channels =
+            !options.channels ? '' :
+                typeof options.channels === 'string' ? options.channels : options.channels.join(',');
         endpoint += `&channels=${channels}`;
 
         return endpoint;
