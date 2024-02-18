@@ -89,7 +89,7 @@ export class WebsocketConnection {
 
         // pass api details directly
         endpoint += `?api_key=${options.apiKey}`;
-        endpoint += `&host=${options.apiHost}`;
+        endpoint += `&api_host=${options.apiHost}`;
 
         // normalize channels
         const channels =
