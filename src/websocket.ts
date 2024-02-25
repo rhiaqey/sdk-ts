@@ -10,7 +10,7 @@ if (typeof process !== 'undefined' && process.release.name === 'node') {
 }
 
 export type WebsocketConnectionOptions = {
-    host: string;
+    endpoint: string;
     apiKey: string;
     apiHost: string;
     channels: string | string[];
@@ -70,16 +70,16 @@ export class WebsocketConnection {
         let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
 
         // extract host
-        if (options.host.startsWith('http://')) {
-            endpoint += options.host.substring(8);
-        } else if (options.host.startsWith('https://')) {
-            endpoint += options.host.substring(7);
-        } else if (options.host.startsWith('wss://')) {
-            endpoint += options.host.substring(6);
-        } else if (options.host.startsWith('ws://')) {
-            endpoint += options.host.substring(5);
+        if (options.endpoint.startsWith('http://')) {
+            endpoint += options.endpoint.substring(8);
+        } else if (options.endpoint.startsWith('https://')) {
+            endpoint += options.endpoint.substring(7);
+        } else if (options.endpoint.startsWith('wss://')) {
+            endpoint += options.endpoint.substring(6);
+        } else if (options.endpoint.startsWith('ws://')) {
+            endpoint += options.endpoint.substring(5);
         } else {
-            endpoint += options.host;
+            endpoint += options.endpoint;
         }
 
         // ensure suffix is correct
