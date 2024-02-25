@@ -5,6 +5,18 @@ export enum ClientMessageType {
     Ping = 100,
 }
 
+export type ClientConnectedMessage = {
+    client_id: string;
+    hub_id?: string;
+};
+
+export type ClientSubscribedMessage = {
+    channel: {
+        Name: string;
+        Size: number;
+    }
+};
+
 export class ClientMessage<T = unknown> {
     // required
     protected typ!: ClientMessageType;
