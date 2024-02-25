@@ -54,4 +54,20 @@ export class ClientMessage<T = unknown> {
     get_category(): string | undefined {
         return this.cat;
     }
+
+    is_connected(): boolean {
+        return this.get_value() === ClientMessageType.Connected;
+    }
+
+    is_subscribed(): boolean {
+        return this.get_value() === ClientMessageType.Subscribed;
+    }
+
+    is_data(): boolean {
+        return this.get_value() === ClientMessageType.Data;
+    }
+
+    is_ping(): boolean {
+        return this.get_value() === ClientMessageType.Ping;
+    }
 }
