@@ -14,6 +14,7 @@ export type WebsocketConnectionOptions = {
     apiKey: string;
     apiHost: string;
     channels: string | string[];
+    snapshot?: boolean;
     env?: 'dev' | 'prod'
 };
 
@@ -96,6 +97,12 @@ export class WebsocketConnection {
             !options.channels ? '' :
                 typeof options.channels === 'string' ? options.channels : options.channels.join(',');
         endpoint += `&channels=${channels}`;
+
+        if (typeof options.snapshot !== 'undefined') {
+            endpoint += `&snapshot=${options.snapshot}`;
+        } else {
+            endpoint += '&snapshot=true';
+        }
 
         return endpoint;
     }

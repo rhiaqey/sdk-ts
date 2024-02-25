@@ -17,23 +17,38 @@ const options: WebsocketConnectionOptions = {
     apiKey: "some_strong_api_key1",
     apiHost: "localhost:5000",
     channels: ["ticker3", "iss", "iss2", "ticks", "yahoo1"],
+    snapshot: true
 };
 
 describe('websocket', () => {
     it('normalize_endpoint works on dev', () => {
         const to = {...options, env: 'dev'} as WebsocketConnectionOptions;
         const tt = new TestWebsocket(to);
-        expect(tt.testNormalization(to)).toEqual("ws://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1");
+        expect(tt.testNormalization(to)).toEqual("ws://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=true");
     });
 
     it('normalize_endpoint works on prod', () => {
         const to = {...options, env: 'prod'} as WebsocketConnectionOptions;
         const tt = new TestWebsocket(to);
-        expect(tt.testNormalization(to)).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1");
+        expect(tt.testNormalization(to)).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=true");
     });
 
     it('endpoint is generated correctly', () => {
         const tt = new TestWebsocket(options);
-        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1");
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=true");
+    });
+
+    it('snapshot is generated correctly when snapshot is true', () => {
+        const new_options = options;
+        new_options.snapshot = true;
+        const tt = new TestWebsocket(new_options);
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=true");
+    });
+
+    it('snapshot is generated correctly when snapshot is false', () => {
+        const new_options = options;
+        new_options.snapshot = false;
+        const tt = new TestWebsocket(new_options);
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=false");
     });
 });
