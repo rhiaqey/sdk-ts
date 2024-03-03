@@ -55,19 +55,19 @@ export class ClientMessage<T = unknown> {
         return this.cat;
     }
 
-    is_connected(): boolean {
-        return this.get_value() === ClientMessageType.Connected;
+    is_connected_type(): boolean {
+        return this.get_type() === ClientMessageType.Connected;
     }
 
-    is_subscribed(): boolean {
-        return this.get_value() === ClientMessageType.Subscribed;
+    is_subscribed_type(): boolean {
+        return this.get_type() === ClientMessageType.Subscribed;
     }
 
-    is_data(): boolean {
-        return this.get_value() === ClientMessageType.Data;
+    is_data_type(): boolean {
+        return this.get_type() === ClientMessageType.Data;
     }
 
-    is_ping(): boolean {
-        return this.get_value() === ClientMessageType.Ping;
+    is_ping_type(): boolean {
+        return this.get_type() === ClientMessageType.Ping;
     }
 }
