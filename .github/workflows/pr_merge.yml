@@ -49,9 +49,6 @@ jobs:
         run: |
           echo "Current branch $GIT_BRANCH"
 
-          git status
-          ls -lah
-
           git config user.name "GitHub Actions"
           git config user.email "github-actions@users.noreply.github.com"
 
