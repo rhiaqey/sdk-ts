@@ -60,6 +60,10 @@ jobs:
           VERSION="$(cat package.json | jq -r '.version')"
 
           npm run build
+
+          git status
+          ls -lah
+          
           npm publish --access public
 
           git push origin v$VERSION
