@@ -49,6 +49,9 @@ jobs:
         run: |
           echo "Current branch $GIT_BRANCH"
 
+          git status
+          ls -lah
+
           git config user.name "GitHub Actions"
           git config user.email "github-actions@users.noreply.github.com"
 
@@ -60,9 +63,6 @@ jobs:
           VERSION="$(cat package.json | jq -r '.version')"
 
           npm run build
-
-          git status
-          ls -lah
           
           npm publish --access public
 
