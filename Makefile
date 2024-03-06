@@ -13,3 +13,6 @@ test:
 .PHONY: serve
 serve: build
 	npm run serve
+
+.PHONY: run
+run: serve

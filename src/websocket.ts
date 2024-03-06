@@ -63,7 +63,8 @@ const genericRetryStrategy =
         };
 
 export class WebsocketConnection {
-    protected id: string;
+    public id: string;
+
     protected endpoint!: string;
     protected channels!: Set<string>;
     protected events = new Subject<WebsocketConnectionEvent>();
@@ -180,10 +181,6 @@ export class WebsocketConnection {
         return this.dataStream<T>().pipe(
             filter((data) => data.get_channel() === channel),
         );
-    }
-
-    getId(): string {
-        return this.id;
     }
 
 }
