@@ -1,5 +1,6 @@
 import { WebSocketSubjectConfig, webSocket } from 'rxjs/webSocket';
 import { ClientMessage } from './message';
+import { ulid } from 'ulidx';
 import {Observable, Subject, filter, map, retryWhen, throwError, timer} from 'rxjs';
 
 import { plainToInstance } from 'class-transformer';
@@ -62,7 +63,7 @@ const genericRetryStrategy =
         };
 
 export class WebsocketConnection {
-
+    protected id: string;
     protected endpoint!: string;
     protected channels!: Set<string>;
     protected events = new Subject<WebsocketConnectionEvent>();
@@ -108,6 +109,7 @@ export class WebsocketConnection {
     }
 
     constructor(public options: WebsocketConnectionOptions) {
+        this.id = ulid();
         this.endpoint = this.normalize_endpoint(options);
         this.channels = new Set(options.channels);
         this.events.next([ 'ready' ]);
@@ -178,6 +180,10 @@ export class WebsocketConnection {
         return this.dataStream<T>().pipe(
             filter((data) => data.get_channel() === channel),
         );
+    }
+
+    getId(): string {
+        return this.id;
     }
 
 }
