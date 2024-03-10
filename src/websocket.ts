@@ -109,10 +109,15 @@ export class WebsocketConnection {
         return endpoint;
     }
 
+    protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {
+        const channels = typeof options.channels === 'string' ? options.channels.split(',') : this.channels;
+        return new Set([].concat(channels));
+    }
+
     constructor(public options: WebsocketConnectionOptions) {
         this.id = ulid();
-        this.endpoint = this.normalize_endpoint(options);
-        this.channels = new Set(options.channels);
+        this.endpoint = this.normalize_endpoint(options);        
+        this.channels = this.normalize_channels(options);
         this.events.next(['ready']);
     }
 
