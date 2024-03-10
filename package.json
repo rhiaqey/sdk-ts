@@ -12,6 +12,16 @@
         "serve": "npx http-server -p 8080 -o ."
     },
     "license": "Apache-2.0",
+    "dependencies": {
+        "@msgpack/msgpack": "2.8.0",
+        "class-transformer": "^0.5.1",
+        "reflect-metadata": "^0.2.1",
+        "ulidx": "^2.3.0",
+        "ws": "^8.16.0"
+    },
+    "peerDependencies": {
+        "rxjs": "^7.8.1"
+    },
     "devDependencies": {
         "@babel/cli": "^7.23.9",
         "@babel/core": "^7.24.0",
@@ -37,7 +47,7 @@
         "rxjs": "^7.8.1",
         "style-loader": "^3.3.4",
         "terser-webpack-plugin": "^5.3.10",
-        "typescript": "^5.3.3",
+        "typescript": "^5.4.2",
         "url-loader": "^4.1.1",
         "webpack": "^5.90.3",
         "webpack-cli": "^5.1.4",
@@ -60,15 +70,5 @@
             "jsx",
             "node"
         ]
-    },
-    "dependencies": {
-        "@msgpack/msgpack": "2.8.0",
-        "class-transformer": "^0.5.1",
-        "reflect-metadata": "^0.2.1",
-        "ulidx": "^2.3.0",
-        "ws": "^8.16.0"
-    },
-    "peerDependencies": {
-        "rxjs": "^7.8.1"
     }
 }
