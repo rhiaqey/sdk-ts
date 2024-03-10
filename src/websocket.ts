@@ -143,7 +143,7 @@ export class WebsocketConnection {
 
         this.connection = webSocket(options);
 
-        return this.connection.pipe(
+        this.connection.pipe(
             retryWhen(
                 genericRetryStrategy({
                     maxRetryAttempts: connectParams.maxRetryAttempts,
@@ -183,7 +183,7 @@ export class WebsocketConnection {
         );
     }
 
-    close() {
+    disconnect() {
         this.connection.complete();
     }
 
