@@ -32,7 +32,7 @@ const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
 }
 
 export type WebsocketConnectionEvent<D = unknown> =
-    [event: 'ready'] |
+    [event: 'ready', data: Set<string>] |
     [event: 'open', data: Event] |
     [event: 'close', data: CloseEvent] |
     [event: 'error', data: Error] |
@@ -113,7 +113,7 @@ export class WebsocketConnection {
         this.id = ulid();
         this.endpoint = this.normalize_endpoint(options);
         this.channels = new Set(options.channels);
-        this.events.next(['ready']);
+        this.events.next(['ready', this.channels]);
     }
 
     connect(connectParams = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
