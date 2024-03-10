@@ -1,10 +1,10 @@
-import { type WebSocketSubjectConfig, webSocket } from 'rxjs/webSocket';
+import { type WebSocketSubjectConfig, webSocket, type WebSocketSubject } from 'rxjs/webSocket';
 import { ClientMessage } from './message';
 import { ulid } from 'ulidx';
-import {type Observable, Subject, filter, map, retryWhen, throwError, timer} from 'rxjs';
+import { type Observable, Subject, filter, map, retryWhen, throwError, timer } from 'rxjs';
 
 import { plainToInstance } from 'class-transformer';
-import {mergeMap} from "rxjs/operators";
+import { mergeMap } from "rxjs/operators";
 
 if (typeof process !== 'undefined' && process.release.name === 'node') {
     Object.assign(global, { WebSocket: require('ws') });
@@ -32,18 +32,18 @@ const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
 }
 
 export type WebsocketConnectionEvent<D = unknown> =
-    [ event: 'ready' ] |
-    [ event: 'open',  data: Event ] |
-    [ event: 'close', data: CloseEvent ] |
-    [ event: 'error', data: Error ] |
-    [ event: 'data',  data: ClientMessage<D> ] |
-    [ event: 'complete' ];
+    [event: 'ready'] |
+    [event: 'open', data: Event] |
+    [event: 'close', data: CloseEvent] |
+    [event: 'error', data: Error] |
+    [event: 'data', data: ClientMessage<D>] |
+    [event: 'complete'];
 
 const genericRetryStrategy =
     ({
-         maxRetryAttempts = 3,
-         retryTimeout = 1000,
-     }: {
+        maxRetryAttempts = 3,
+        retryTimeout = 1000,
+    }: {
         maxRetryAttempts?: number;
         retryTimeout?: number;
     } = {}) =>
@@ -67,6 +67,7 @@ export class WebsocketConnection {
     protected endpoint!: string;
     protected channels!: Set<string>;
     protected events = new Subject<WebsocketConnectionEvent>();
+    protected connection: WebSocketSubject<ClientMessage<unknown>>;
 
     protected normalize_endpoint(options: WebsocketConnectionOptions): string {
         let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
@@ -112,7 +113,7 @@ export class WebsocketConnection {
         this.id = ulid();
         this.endpoint = this.normalize_endpoint(options);
         this.channels = new Set(options.channels);
-        this.events.next([ 'ready' ]);
+        this.events.next(['ready']);
     }
 
     connect(connectParams = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
@@ -121,12 +122,12 @@ export class WebsocketConnection {
             binaryType: 'arraybuffer',
             openObserver: {
                 next: (event: Event) => {
-                    this.events.next([ 'open', event ]);
+                    this.events.next(['open', event]);
                 },
             },
             closeObserver: {
                 next: (event: CloseEvent) => {
-                    this.events.next([ 'close', event ]);
+                    this.events.next(['close', event]);
                 },
             },
             serializer: (value: ClientMessage<unknown>) => {
@@ -140,9 +141,9 @@ export class WebsocketConnection {
             }
         };
 
-        const subject = webSocket(options);
+        this.connection = webSocket(options);
 
-        return subject.pipe(
+        return this.connection.pipe(
             retryWhen(
                 genericRetryStrategy({
                     maxRetryAttempts: connectParams.maxRetryAttempts,
@@ -151,13 +152,13 @@ export class WebsocketConnection {
             ),
         ).subscribe({
             next: data => {
-                this.events.next([ 'data', data ]);
+                this.events.next(['data', data]);
             },
             error: err => {
-                this.events.next([ 'error', err ]);
+                this.events.next(['error', err]);
             },
             complete: () => {
-                this.events.next([ 'complete' ]);
+                this.events.next(['complete']);
             },
         });
     }
@@ -180,6 +181,10 @@ export class WebsocketConnection {
         return this.dataStream<T>().pipe(
             filter((data) => data.get_channel() === channel),
         );
+    }
+
+    close() {
+        this.connection.complete();
     }
 
     getId(): string {
