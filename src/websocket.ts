@@ -1,7 +1,7 @@
-import { WebSocketSubjectConfig, webSocket } from 'rxjs/webSocket';
+import { type WebSocketSubjectConfig, webSocket } from 'rxjs/webSocket';
 import { ClientMessage } from './message';
 import { ulid } from 'ulidx';
-import {Observable, Subject, filter, map, retryWhen, throwError, timer} from 'rxjs';
+import {type Observable, Subject, filter, map, retryWhen, throwError, timer} from 'rxjs';
 
 import { plainToInstance } from 'class-transformer';
 import {mergeMap} from "rxjs/operators";
@@ -26,7 +26,7 @@ export type WebsocketConnectParams = {
 };
 
 const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
-    maxRetryAttempts: Infinity,
+    maxRetryAttempts: Number.POSITIVE_INFINITY,
     pingTimeout: 30000,
     retryTimeout: 10000,
 }

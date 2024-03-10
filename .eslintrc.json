@@ -8,8 +8,13 @@
             "experimentalObjectRestSpread": true
         }
     },
-    "plugins": ["@typescript-eslint"],
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
     "rules": {
         "comma-dangle": 0,
         "no-unused-vars": "warn",

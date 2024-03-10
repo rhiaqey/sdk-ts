@@ -1,7 +1,11 @@
 export enum ClientMessageType {
+    // eslint-disable-next-line no-unused-vars
     Connected = 0,
+    // eslint-disable-next-line no-unused-vars
     Subscribed = 1,
+    // eslint-disable-next-line no-unused-vars
     Data = 10,
+    // eslint-disable-next-line no-unused-vars
     Ping = 100,
 }
 

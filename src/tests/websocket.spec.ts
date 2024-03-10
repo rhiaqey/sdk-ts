@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import {WebsocketConnection, WebsocketConnectionOptions} from '../websocket';
+import {WebsocketConnection, type WebsocketConnectionOptions} from '../websocket';
 
 class TestWebsocket extends WebsocketConnection {
     testNormalization(options: WebsocketConnectionOptions) {
