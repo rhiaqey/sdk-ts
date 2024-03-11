@@ -108,15 +108,15 @@ export class WebsocketConnection {
     }
 
     protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {        
-        let channels: Array<string> = [];
+        let new_channels: Array<string> = [];
 
         if (Array.isArray(options.channels)) {
-            channels = options.channels.map(channel => channel.trim());
+            new_channels = options.channels.map(channel => channel.trim());
         } else {
-            channels = options.channels.split(',').map(channel => channel.trim());
+            new_channels = options.channels.split(',').map(channel => channel.trim());
         }
 
-        return new Set([].concat(channels));
+        return new Set(new_channels);
     }
 
     constructor(public options: WebsocketConnectionOptions) {
