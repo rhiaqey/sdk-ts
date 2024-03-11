@@ -63,11 +63,11 @@ const genericRetryStrategy =
         };
 
 export class WebsocketConnection {
-    protected id: string;
-    protected endpoint!: string;
-    protected channels!: Set<string>;
-    protected events = new Subject<WebsocketConnectionEvent>();
-    protected connection: WebSocketSubject<ClientMessage<unknown>>;
+    protected $id: string;
+    protected $endpoint!: string;
+    protected $channels!: Set<string>;
+    protected $events = new Subject<WebsocketConnectionEvent>();
+    protected $connection: WebSocketSubject<ClientMessage<unknown>>;
 
     protected normalize_endpoint(options: WebsocketConnectionOptions): string {
         let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
@@ -95,7 +95,7 @@ export class WebsocketConnection {
         endpoint += `&api_host=${options.apiHost}`;
 
         // channels are already normalized
-        endpoint += `&channels=${Array.from(this.channels).join(',')}`;
+        endpoint += `&channels=${Array.from(this.$channels).join(',')}`;
 
         if (typeof options.snapshot !== 'undefined') {
             endpoint += `&snapshot=${options.snapshot}`;
@@ -119,24 +119,24 @@ export class WebsocketConnection {
     }
 
     constructor(public options: WebsocketConnectionOptions) {
-        this.id = ulid();
-        this.channels = this.normalize_channels(options.channels);
-        this.endpoint = this.normalize_endpoint(options);
-        this.events.next(['ready']);
+        this.$id = ulid();
+        this.$channels = this.normalize_channels(options.channels);
+        this.$endpoint = this.normalize_endpoint(options);
+        this.$events.next(['ready']);
     }
 
     connect(connectParams = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
         const options: WebSocketSubjectConfig<ClientMessage<unknown>> = {
-            url: this.endpoint,
+            url: this.$endpoint,
             binaryType: 'arraybuffer',
             openObserver: {
                 next: (event: Event) => {
-                    this.events.next(['open', event]);
+                    this.$events.next(['open', event]);
                 },
             },
             closeObserver: {
                 next: (event: CloseEvent) => {
-                    this.events.next(['close', event]);
+                    this.$events.next(['close', event]);
                 },
             },
             serializer: (value: ClientMessage<unknown>) => {
@@ -150,9 +150,9 @@ export class WebsocketConnection {
             }
         };
 
-        this.connection = webSocket(options);
+        this.$connection = webSocket(options);
 
-        this.connection.pipe(
+        this.$connection.pipe(
             retryWhen(
                 genericRetryStrategy({
                     maxRetryAttempts: connectParams.maxRetryAttempts,
@@ -161,19 +161,19 @@ export class WebsocketConnection {
             ),
         ).subscribe({
             next: data => {
-                this.events.next(['data', data]);
+                this.$events.next(['data', data]);
             },
             error: err => {
-                this.events.next(['error', err]);
+                this.$events.next(['error', err]);
             },
             complete: () => {
-                this.events.next(['complete']);
+                this.$events.next(['complete']);
             },
         });
     }
 
     eventStream(): Observable<WebsocketConnectionEvent> {
-        return this.events.asObservable()
+        return this.$events.asObservable()
     }
 
     dataStream<T = unknown>(): Observable<ClientMessage<T>> {
@@ -193,15 +193,15 @@ export class WebsocketConnection {
     }
 
     disconnect() {
-        this.connection.complete();
+        this.$connection.complete();
     }
 
     getChannels(): Set<string> {
-        return this.channels;
+        return this.$channels;
     }
 
     getId(): string {
-        return this.id;
+        return this.$id;
     }
 
 }

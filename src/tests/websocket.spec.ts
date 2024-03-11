@@ -8,7 +8,7 @@ class TestWebsocket extends WebsocketConnection {
     }
 
     getEndpoint(): string {
-        return this.endpoint;
+        return this.$endpoint;
     }
 }
 
