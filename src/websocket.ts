@@ -14,7 +14,7 @@ export type WebsocketConnectionOptions = {
     endpoint: string;
     apiKey: string;
     apiHost: string;
-    channels: string | string[];
+    channels: string | string[] | Set<string>;
     snapshot?: boolean;
     env?: 'dev' | 'prod'
 };
@@ -106,22 +106,16 @@ export class WebsocketConnection {
         return endpoint;
     }
 
-    protected normalize_channels(channels: string | string[]): Set<string> {        
-        let new_channels: Array<string> = [];
-
-        console.log(channels);
-
-        if (Array.isArray(channels)) { 
-            console.log('is array');           
-            new_channels = channels.map(channel => channel.trim());
-            console.log('is array after', new_channels);
-        } else {
-            console.log('is string', channels);
-            new_channels = channels.split(',').map(channel => channel.trim());
-            console.log('is string after', new_channels);
+    protected normalize_channels(channels: string | string[] | Set<string>): Set<string> {
+        if (channels instanceof Set) {
+            return channels;
         }
 
-        return new Set(new_channels);
+        if (Array.isArray(channels)) {
+            return new Set(channels.map(channel => channel.trim()));
+        }
+
+        return new Set(channels.split(',').map(channel => channel.trim()));
     }
 
     constructor(public options: WebsocketConnectionOptions) {
