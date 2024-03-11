@@ -95,8 +95,7 @@ export class WebsocketConnection {
         endpoint += `&api_host=${options.apiHost}`;
 
         // channels are already normalized
-        const channels = Array.from(this.channels).join(',');
-        endpoint += `&channels=${channels}`;
+        endpoint += `&channels=${Array.from(this.channels).join(',')}`;
 
         if (typeof options.snapshot !== 'undefined') {
             endpoint += `&snapshot=${options.snapshot}`;
@@ -107,13 +106,19 @@ export class WebsocketConnection {
         return endpoint;
     }
 
-    protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {        
+    protected normalize_channels(channels: string | string[]): Set<string> {        
         let new_channels: Array<string> = [];
 
-        if (Array.isArray(options.channels)) {
-            new_channels = options.channels.map(channel => channel.trim());
+        console.log(channels);
+
+        if (Array.isArray(channels)) { 
+            console.log('is array');           
+            new_channels = channels.map(channel => channel.trim());
+            console.log('is array after', new_channels);
         } else {
-            new_channels = options.channels.split(',').map(channel => channel.trim());
+            console.log('is string', channels);
+            new_channels = channels.split(',').map(channel => channel.trim());
+            console.log('is string after', new_channels);
         }
 
         return new Set(new_channels);
@@ -121,7 +126,7 @@ export class WebsocketConnection {
 
     constructor(public options: WebsocketConnectionOptions) {
         this.id = ulid();
-        this.channels = this.normalize_channels(options);
+        this.channels = this.normalize_channels(options.channels);
         this.endpoint = this.normalize_endpoint(options);
         this.events.next(['ready']);
     }
