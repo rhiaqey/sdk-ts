@@ -107,11 +107,14 @@ export class WebsocketConnection {
         return endpoint;
     }
 
-    protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {
-        // remove any extra trimmings
-        const channels = typeof options.channels === 'string' ?
-            options.channels.split(',').map(channel => channel.trim()) :
-            options.channels.map(channel => channel.trim());
+    protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {        
+        let channels: Array<string> = [];
+
+        if (Array.isArray(options.channels)) {
+            channels = options.channels.map(channel => channel.trim());
+        } else {
+            channels = options.channels.split(',').map(channel => channel.trim());
+        }
 
         return new Set([].concat(channels));
     }
