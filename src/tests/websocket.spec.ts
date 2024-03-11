@@ -51,4 +51,25 @@ describe('websocket', () => {
         const tt = new TestWebsocket(new_options);
         expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticker3,iss,iss2,ticks,yahoo1&snapshot=false");
     });
+
+    it('works with channels as string', () => {
+        const new_options = options;
+        new_options.channels = 'ticks';
+        const tt = new TestWebsocket(new_options);
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticks&snapshot=false");
+    });
+
+    it('works with multiple channels as string', () => {
+        const new_options = options;
+        new_options.channels = 'ticks,yahoo';
+        const tt = new TestWebsocket(new_options);
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticks,yahoo&snapshot=false");
+    });
+
+    it('works with multiple channels as string with extract spaces', () => {
+        const new_options = options;
+        new_options.channels = '   ticks , yahoo       ';
+        const tt = new TestWebsocket(new_options);
+        expect(tt.getEndpoint()).toEqual("wss://localhost:3002/ws?api_key=some_strong_api_key1&api_host=localhost:5000&channels=ticks,yahoo&snapshot=false");
+    });
 });

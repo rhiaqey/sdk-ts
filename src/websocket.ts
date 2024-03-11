@@ -94,10 +94,8 @@ export class WebsocketConnection {
         endpoint += `?api_key=${options.apiKey}`;
         endpoint += `&api_host=${options.apiHost}`;
 
-        // normalize channels
-        const channels =
-            !options.channels ? '' :
-                typeof options.channels === 'string' ? options.channels : options.channels.join(',');
+        // channels are already normalized
+        const channels = Array.from(this.channels).join(',');
         endpoint += `&channels=${channels}`;
 
         if (typeof options.snapshot !== 'undefined') {
@@ -110,14 +108,18 @@ export class WebsocketConnection {
     }
 
     protected normalize_channels(options: WebsocketConnectionOptions): Set<string> {
-        const channels = typeof options.channels === 'string' ? options.channels.split(',') : this.channels;
+        // remove any extra trimmings
+        const channels = typeof options.channels === 'string' ?
+            options.channels.split(',').map(channel => channel.trim()) :
+            options.channels.map(channel => channel.trim());
+
         return new Set([].concat(channels));
     }
 
     constructor(public options: WebsocketConnectionOptions) {
         this.id = ulid();
-        this.endpoint = this.normalize_endpoint(options);        
         this.channels = this.normalize_channels(options);
+        this.endpoint = this.normalize_endpoint(options);
         this.events.next(['ready']);
     }
 
