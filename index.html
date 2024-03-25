@@ -18,6 +18,10 @@
             snapshot: true
         });
 
+        connection.fetchSnapshot().subscribe(data => {
+            console.log('>> snapshot arrived', data);
+        });
+
         connection.dataStream().subscribe((message) => {
             console.log('>> message arrived', message);
         });

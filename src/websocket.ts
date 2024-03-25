@@ -1,10 +1,11 @@
 import { type WebSocketSubjectConfig, webSocket, type WebSocketSubject } from 'rxjs/webSocket';
 import { ClientMessage } from './message';
 import { ulid } from 'ulidx';
-import { type Observable, Subject, filter, map, retryWhen, throwError, timer } from 'rxjs';
+import { type Observable, Subject, filter, map, retryWhen, throwError, timer, of } from 'rxjs';
+import { fromFetch } from 'rxjs/fetch';
 
 import { plainToInstance } from 'class-transformer';
-import { mergeMap } from "rxjs/operators";
+import { mergeMap, switchMap } from "rxjs/operators";
 
 if (typeof process !== 'undefined' && process.release.name === 'node') {
     Object.assign(global, { WebSocket: require('ws') });
@@ -64,12 +65,50 @@ const genericRetryStrategy =
 
 export class WebsocketConnection {
     protected $id: string;
-    protected $endpoint!: string;
+    protected $ws_endpoint!: string;
+    protected $snapshot_endpoint!: string;
     protected $channels!: Set<string>;
     protected $events = new Subject<WebsocketConnectionEvent>();
     protected $connection: WebSocketSubject<ClientMessage<unknown>>;
 
-    protected normalize_endpoint(options: WebsocketConnectionOptions): string {
+    protected normalize_snapshot_endpoint(options: WebsocketConnectionOptions): string {
+        let endpoint = options.env === 'dev' ? 'http://' : 'https://';
+
+        // extract host
+        if (options.endpoint.startsWith('http://')) {
+            endpoint += options.endpoint.substring(8);
+        } else if (options.endpoint.startsWith('https://')) {
+            endpoint += options.endpoint.substring(7);
+        } else if (options.endpoint.startsWith('wss://')) {
+            endpoint += options.endpoint.substring(6);
+        } else if (options.endpoint.startsWith('ws://')) {
+            endpoint += options.endpoint.substring(5);
+        } else {
+            endpoint += options.endpoint;
+        }
+
+        // ensure suffix is correct
+        if (!endpoint.endsWith('/snapshot')) {
+            endpoint += '/snapshot'
+        }
+
+        // pass api details directly
+        endpoint += `?api_key=${options.apiKey}`;
+        endpoint += `&api_host=${options.apiHost}`;
+
+        // channels are already normalized
+        endpoint += `&channels=${Array.from(this.$channels).join(',')}`;
+
+        if (typeof options.snapshot !== 'undefined') {
+            endpoint += `&snapshot=${options.snapshot}`;
+        } else {
+            endpoint += '&snapshot=true';
+        }
+
+        return endpoint;
+    }
+
+    protected normalize_ws_endpoint(options: WebsocketConnectionOptions): string {
         let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
 
         // extract host
@@ -121,13 +160,14 @@ export class WebsocketConnection {
     constructor(public options: WebsocketConnectionOptions) {
         this.$id = ulid();
         this.$channels = this.normalize_channels(options.channels);
-        this.$endpoint = this.normalize_endpoint(options);
+        this.$ws_endpoint = this.normalize_ws_endpoint(options);
+        this.$snapshot_endpoint = this.normalize_snapshot_endpoint(options);
         this.$events.next(['ready']);
     }
 
     connect(connectParams = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
         const options: WebSocketSubjectConfig<ClientMessage<unknown>> = {
-            url: this.$endpoint,
+            url: this.$ws_endpoint,
             binaryType: 'arraybuffer',
             openObserver: {
                 next: (event: Event) => {
@@ -189,6 +229,21 @@ export class WebsocketConnection {
     channelStream<T = unknown>(channel: string): Observable<ClientMessage<T>> {
         return this.dataStream<T>().pipe(
             filter((data) => data.get_channel() === channel),
+        );
+    }
+
+    fetchSnapshot<T = unknown>(): Observable<T> {
+        return fromFetch(this.$snapshot_endpoint).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    // OK return data
+                    return response.json();
+                    // biome-ignore lint/style/noUselessElse: <explanation>
+                } else {
+                    // Server is returning a status requiring the client to try something else.
+                    return of({ error: true, message: `Error ${ response.status }`, response });
+                }
+            })
         );
     }
 
