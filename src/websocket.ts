@@ -1,21 +1,21 @@
 import { type WebSocketSubjectConfig, webSocket, type WebSocketSubject } from 'rxjs/webSocket';
 import { ClientMessage } from './message';
 import { ulid } from 'ulidx';
-import { type Observable, Subject, filter, map, retryWhen, throwError, timer, of } from 'rxjs';
+import { type Observable, Subject, filter, map, throwError, timer, of, type Subscription, firstValueFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 
 import { plainToInstance } from 'class-transformer';
-import { mergeMap, switchMap } from "rxjs/operators";
+import { retry, switchMap } from "rxjs/operators";
 
 if (typeof process !== 'undefined' && process.release.name === 'node') {
     Object.assign(global, { WebSocket: require('ws') });
 }
 
 export type WebsocketConnectionOptions = {
-    endpoint: string;
+    endpoints: string | string[];
     apiKey: string;
     apiHost: string;
-    channels: string | string[] | Set<string>;
+    channels: string | string[];
     snapshot?: boolean;
     env?: 'dev' | 'prod'
 };
@@ -28,8 +28,8 @@ export type WebsocketConnectParams = {
 
 const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
     maxRetryAttempts: Number.POSITIVE_INFINITY,
-    pingTimeout: 30000,
-    retryTimeout: 10000,
+    pingTimeout: 2000,
+    retryTimeout: 2000,
 }
 
 export type WebsocketConnectionEvent<D = unknown> =
@@ -40,116 +40,68 @@ export type WebsocketConnectionEvent<D = unknown> =
     [event: 'data', data: ClientMessage<D>] |
     [event: 'complete'];
 
-const genericRetryStrategy =
-    ({
-        maxRetryAttempts = 3,
-        retryTimeout = 1000,
-    }: {
-        maxRetryAttempts?: number;
-        retryTimeout?: number;
-    } = {}) =>
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        (attempts: Observable<any>) => {
-            return attempts.pipe(
-                mergeMap((error, i) => {
-                    const retryAttempt = i + 1;
-
-                    if (retryAttempt > maxRetryAttempts) {
-                        return throwError(() => error);
-                    }
-
-                    return timer(retryAttempt * retryTimeout);
-                }),
-            );
-        };
-
 export class WebsocketConnection {
-    protected $id: string;
-    protected $ws_endpoint!: string;
-    protected $snapshot_endpoint!: string;
-    protected $channels!: Set<string>;
-    protected $events = new Subject<WebsocketConnectionEvent>();
-    protected $connection: WebSocketSubject<ClientMessage<unknown>>;
+    protected $id: string; // uniq connection id. does not change
 
-    protected normalize_snapshot_endpoint(options: WebsocketConnectionOptions): string {
-        let endpoint = options.env === 'dev' ? 'http://' : 'https://';
+    protected $channels!: Set<string>;  // normalized channels
+    protected $ws_endpoints!: Array<string>;  // normalized websocket endpoints
+    protected $snapshot_endpoints!: Array<string>;    // normalized snapshot endpoints
 
-        // extract host
-        if (options.endpoint.startsWith('http://')) {
-            endpoint += options.endpoint.substring(8);
-        } else if (options.endpoint.startsWith('https://')) {
-            endpoint += options.endpoint.substring(7);
-        } else if (options.endpoint.startsWith('wss://')) {
-            endpoint += options.endpoint.substring(6);
-        } else if (options.endpoint.startsWith('ws://')) {
-            endpoint += options.endpoint.substring(5);
-        } else {
-            endpoint += options.endpoint;
+    protected $connection_index = 0;
+    protected $connection_subscription: Subscription;
+    protected $connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS;    // default connection parameters
+    protected $connection: WebSocketSubject<ClientMessage<unknown>>;    // active connection
+
+    protected $events = new Subject<WebsocketConnectionEvent>();    // event stream
+
+    protected normalize_endpoints(options: WebsocketConnectionOptions, protocol: string, path_suffix = '/ws'): Array<string> {
+        const endpoints = (Array.isArray(options.endpoints) ?
+            options.endpoints :
+            options.endpoints.split(",")).map((value => value.trim()));
+
+        const result = new Set<string>();
+
+        for (const endpoint of endpoints) {
+            let output = protocol;
+
+            // extract host
+            if (endpoint.startsWith('http://')) {
+                output += endpoint.substring(8);
+            } else if (endpoint.startsWith('https://')) {
+                output += endpoint.substring(7);
+            } else if (endpoint.startsWith('wss://')) {
+                output += endpoint.substring(6);
+            } else if (endpoint.startsWith('ws://')) {
+                output += endpoint.substring(5);
+            } else {
+                output += endpoint;
+            }
+
+            // ensure suffix is correct
+            if (!output.endsWith(path_suffix)) {
+                output += path_suffix
+            }
+
+            // pass api details directly
+            output += `?api_key=${options.apiKey}`;
+            output += `&api_host=${options.apiHost}`;
+
+            // channels are already normalized
+            output += `&channels=${Array.from(this.$channels).join(',')}`;
+
+            if (typeof options.snapshot !== 'undefined') {
+                output += `&snapshot=${options.snapshot}`;
+            } else {
+                output += '&snapshot=true';
+            }
+
+            result.add(output);
         }
 
-        // ensure suffix is correct
-        if (!endpoint.endsWith('/snapshot')) {
-            endpoint += '/snapshot'
-        }
-
-        // pass api details directly
-        endpoint += `?api_key=${options.apiKey}`;
-        endpoint += `&api_host=${options.apiHost}`;
-
-        // channels are already normalized
-        endpoint += `&channels=${Array.from(this.$channels).join(',')}`;
-
-        if (typeof options.snapshot !== 'undefined') {
-            endpoint += `&snapshot=${options.snapshot}`;
-        } else {
-            endpoint += '&snapshot=true';
-        }
-
-        return endpoint;
+        return Array.from(result);
     }
 
-    protected normalize_ws_endpoint(options: WebsocketConnectionOptions): string {
-        let endpoint = options.env === 'dev' ? 'ws://' : 'wss://';
-
-        // extract host
-        if (options.endpoint.startsWith('http://')) {
-            endpoint += options.endpoint.substring(8);
-        } else if (options.endpoint.startsWith('https://')) {
-            endpoint += options.endpoint.substring(7);
-        } else if (options.endpoint.startsWith('wss://')) {
-            endpoint += options.endpoint.substring(6);
-        } else if (options.endpoint.startsWith('ws://')) {
-            endpoint += options.endpoint.substring(5);
-        } else {
-            endpoint += options.endpoint;
-        }
-
-        // ensure suffix is correct
-        if (!endpoint.endsWith('/ws')) {
-            endpoint += '/ws'
-        }
-
-        // pass api details directly
-        endpoint += `?api_key=${options.apiKey}`;
-        endpoint += `&api_host=${options.apiHost}`;
-
-        // channels are already normalized
-        endpoint += `&channels=${Array.from(this.$channels).join(',')}`;
-
-        if (typeof options.snapshot !== 'undefined') {
-            endpoint += `&snapshot=${options.snapshot}`;
-        } else {
-            endpoint += '&snapshot=true';
-        }
-
-        return endpoint;
-    }
-
-    protected normalize_channels(channels: string | string[] | Set<string>): Set<string> {
-        if (channels instanceof Set) {
-            return channels;
-        }
-
+    protected normalize_channels(channels: string | string[]): Set<string> {
         if (Array.isArray(channels)) {
             return new Set(channels.map(channel => channel.trim()));
         }
@@ -157,17 +109,18 @@ export class WebsocketConnection {
         return new Set(channels.split(',').map(channel => channel.trim()));
     }
 
-    constructor(public options: WebsocketConnectionOptions) {
+    constructor(public options: WebsocketConnectionOptions, public connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
         this.$id = ulid();
+        this.$connection_params = connection_params;
         this.$channels = this.normalize_channels(options.channels);
-        this.$ws_endpoint = this.normalize_ws_endpoint(options);
-        this.$snapshot_endpoint = this.normalize_snapshot_endpoint(options);
+        this.$ws_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'ws://' : 'wss://', '/ws');
+        this.$snapshot_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'http://' : 'https://', '/snapshot');
         this.$events.next(['ready']);
     }
 
-    connect(connectParams = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
+    protected create_connection() {
         const options: WebSocketSubjectConfig<ClientMessage<unknown>> = {
-            url: this.$ws_endpoint,
+            url: this.$ws_endpoints[this.$connection_index++ % this.$ws_endpoints.length],
             binaryType: 'arraybuffer',
             openObserver: {
                 next: (event: Event) => {
@@ -190,15 +143,26 @@ export class WebsocketConnection {
             }
         };
 
-        this.$connection = webSocket(options);
+        return webSocket(options);
+    }
 
-        this.$connection.pipe(
-            retryWhen(
-                genericRetryStrategy({
-                    maxRetryAttempts: connectParams.maxRetryAttempts,
-                    retryTimeout: connectParams.retryTimeout,
-                }),
-            ),
+    protected subscribe_to_connection() {
+        this.$connection_subscription = this.$connection.pipe(
+            retry({
+                // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                delay: (error: any, retryCount: number) => {
+                    if (retryCount > this.connection_params.retryTimeout) {
+                        return throwError(() => error);
+                    }
+
+                    if (this.$ws_endpoints.length > 1) {
+                        this.connect();
+                    }
+
+                    return timer(retryCount * this.connection_params.retryTimeout);
+                },
+                resetOnSuccess: true,
+            })
         ).subscribe({
             next: data => {
                 this.$events.next(['data', data]);
@@ -210,6 +174,14 @@ export class WebsocketConnection {
                 this.$events.next(['complete']);
             },
         });
+    }
+
+    connect() {
+        if (this.$connection_subscription) {
+            this.$connection_subscription.unsubscribe();
+        }
+        this.$connection = this.create_connection();
+        this.subscribe_to_connection();        
     }
 
     eventStream(): Observable<WebsocketConnectionEvent> {
@@ -233,7 +205,7 @@ export class WebsocketConnection {
     }
 
     fetchSnapshot<T = unknown>(): Observable<T> {
-        return fromFetch(this.$snapshot_endpoint).pipe(
+        return fromFetch(this.$snapshot_endpoints[this.$connection_index % this.$ws_endpoints.length]).pipe(
             switchMap(response => {
                 if (response.ok) {
                     // OK return data
@@ -247,9 +219,20 @@ export class WebsocketConnection {
         );
     }
 
-    disconnect() {
+    async fetchSnapshotPromised<T = unknown>(): Promise<T> {
+        return firstValueFrom(this.fetchSnapshot<T>());
+    }
+
+    close() {
         this.$connection.complete();
     }
+
+    // TODO: Remove me. Must be used only for debugging purposes
+    // The close code must be either 1000, or between 3000 and 4999.
+    /*
+    closeWithError(reason: string) {
+        this.$connection.error({ reason });
+    }*/
 
     getChannels(): Set<string> {
         return this.$channels;

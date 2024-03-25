@@ -6,7 +6,7 @@
     "types": "dist/types/index.d.ts",
     "scripts": {
         "build": "webpack --mode production && tsc",
-        "test": "jest --silent",
+        "test": "jest",
         "coverage": "npm run test -- --coverage",
         "prepare": "npm run build",
         "serve": "npx http-server -p 8080 -o ."

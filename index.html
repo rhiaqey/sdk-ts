@@ -11,7 +11,10 @@
     <script>
 
         let connection = new RhiaqeySDK.WebsocketConnection({
-            endpoint: 'https://hub.demo.prod.cloud.rhiaqey.com',
+            endpoints: [
+                'https://hub.demo.prod.cloud.rhiaqey.com',
+                'https://hub2.demo.prod.cloud.rhiaqey.com'
+            ],
             channels: ['ticks'],
             apiHost: 'localhost:8080',
             apiKey: '02f0c887-114f-45d7-8084-7d123804d586',
@@ -22,13 +25,31 @@
             console.log('>> snapshot arrived', data);
         });
 
+        connection.fetchSnapshotPromised().then(data => {
+            console.log('>> async snapshot arrived', data);
+        });
+
         connection.dataStream().subscribe((message) => {
-            console.log('>> message arrived', message);
+            // console.log('>> message arrived', message);
         });
 
         connection.connect();
 
         console.log(`>> connecting ${connection.getId()}`);
+
+        /*
+        setInterval(() => {
+            // this closes the connection also
+            console.log('>> closing with error');
+            connection.closeWithError("lets reconnect");
+        }, 30000);*/
+
+        /*
+        setTimeout(() => {
+            // clean close
+            console.log('>> closing');
+            connection.close();
+        }, 30000);*/
 
     </script>
     <title>Document</title>
