@@ -11,7 +11,7 @@ https://www.npmjs.com/package/@rhiaqey/sdk-ts
 ## CDN
 
 ```
-https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.12/dist/umd/sdk.js
+https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0.45/dist/umd/sdk.js
 https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1.0/dist/umd/sdk.js
 https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/umd/sdk.js
 ```
@@ -20,11 +20,33 @@ https://cdn.jsdelivr.net/npm/@rhiaqey/sdk-ts@1/dist/umd/sdk.js
 
 ```js
 let connection = new RhiaqeySDK.WebsocketConnection({
-    host: 'https://hub.demo.prod.cloud.rhiaqey.com',
-    channels: [ 'some_channel' ],
+    endpoints: [
+        'https://hub.demo.prod.cloud.rhiaqey.com'
+    ],
+    channels: [
+        'some_channel'
+    ],
     apiKey: 'strong_api_key',
-    apiHost: 'localhost:3333'
+    apiHost: 'localhost:3333',
+    snapshot: true  // subscribe to snapshot feed
 });
 
+// request snapshot from /snapshot http endpoint
+connection.fetchSnapshot().subscribe(data => {
+    console.log('>> snapshot arrived', data);
+});
+
+// promised version of the snapshot request
+connection.fetchSnapshotPromised().then(data => {
+    console.log('>> async snapshot arrived', data);
+});
+
+// all the messages will land here
+connection.dataStream().subscribe((message) => {
+    // console.log('>> message arrived', message);
+});
+
+// connect explicitly
 connection.connect();
+
 ```
