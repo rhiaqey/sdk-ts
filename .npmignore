@@ -21,6 +21,7 @@
 /.github
 /demo
 .esdoc.json
+.editorconfig
 
 npm-debug.log*
 yarn-debug.log*
