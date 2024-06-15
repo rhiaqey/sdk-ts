@@ -16,7 +16,9 @@ export type WebsocketConnectionOptions = {
     apiKey: string;
     apiHost: string;
     channels: string | string[];
-    snapshot?: boolean;
+    snapshot?: 'asc' | 'desc' | boolean;
+    snapshot_size?: number;
+    user_id?: string;
     env?: 'dev' | 'prod';
 };
 
@@ -85,12 +87,20 @@ export class WebsocketConnection {
             output += `&api_host=${options.apiHost}`;
 
             // channels are already normalized
-            output += `&channels=${Array.from(this.$channels).join(',')}`;
+            output += `&channels=${Array.from(this.$channels).map((channel) => encodeURIComponent(channel)).join(',')}`;
 
             if (typeof options.snapshot !== 'undefined') {
                 output += `&snapshot=${options.snapshot}`;
             } else {
                 output += '&snapshot=true';
+            }
+
+            if (typeof options.snapshot_size !== 'undefined') {
+                output += `&snapshot_size=${+options.snapshot_size}`;
+            }
+
+            if (typeof options.user_id !== 'undefined') {
+                output += `&user_id=${encodeURIComponent(options.user_id)}`;
             }
 
             result.add(output);

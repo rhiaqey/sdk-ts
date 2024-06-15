@@ -15,10 +15,11 @@
                 'https://hub.demo.prod.cloud.rhiaqey.com',
                 'https://hub2.demo.prod.cloud.rhiaqey.com'
             ],
-            channels: ['ticks'],
+            channels: ['ticks/live/BTCJPYm'],
             apiHost: 'localhost:8080',
             apiKey: '02f0c887-114f-45d7-8084-7d123804d586',
-            snapshot: true
+            snapshot: 'desc',
+            snapshot_size: 1
         });
 
         connection.fetchSnapshot().subscribe(data => {
@@ -30,7 +31,9 @@
         });
 
         connection.dataStream().subscribe((message) => {
-            // console.log('>> message arrived', message);
+            if (message.get_type() === 10) {
+                console.log('>> data message arrived', new Date(+message.get_tag()), message.get_value());
+            }
         });
 
         connection.connect();
