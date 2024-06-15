@@ -18,7 +18,7 @@ export type ClientSubscribedMessage = {
     channel: {
         Name: string;
         Size: number;
-    }
+    };
 };
 
 export class ClientMessage<T = unknown> {

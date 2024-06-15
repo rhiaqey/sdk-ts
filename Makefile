@@ -16,3 +16,6 @@ serve: build
 
 .PHONY: run
 run: serve
+
+pretty:
+	npx prettier src --write

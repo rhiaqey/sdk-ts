@@ -5,7 +5,7 @@ import { type Observable, Subject, filter, map, throwError, timer, of, type Subs
 import { fromFetch } from 'rxjs/fetch';
 
 import { plainToInstance } from 'class-transformer';
-import { retry, switchMap } from "rxjs/operators";
+import { retry, switchMap } from 'rxjs/operators';
 
 if (typeof process !== 'undefined' && process.release.name === 'node') {
     Object.assign(global, { WebSocket: require('ws') });
@@ -17,7 +17,7 @@ export type WebsocketConnectionOptions = {
     apiHost: string;
     channels: string | string[];
     snapshot?: boolean;
-    env?: 'dev' | 'prod'
+    env?: 'dev' | 'prod';
 };
 
 export type WebsocketConnectParams = {
@@ -30,34 +30,32 @@ const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
     maxRetryAttempts: Number.POSITIVE_INFINITY,
     pingTimeout: 2000,
     retryTimeout: 2000,
-}
+};
 
 export type WebsocketConnectionEvent<D = unknown> =
-    [event: 'ready'] |
-    [event: 'open', data: Event] |
-    [event: 'close', data: CloseEvent] |
-    [event: 'error', data: Error] |
-    [event: 'data', data: ClientMessage<D>] |
-    [event: 'complete'];
+    | [event: 'ready']
+    | [event: 'open', data: Event]
+    | [event: 'close', data: CloseEvent]
+    | [event: 'error', data: Error]
+    | [event: 'data', data: ClientMessage<D>]
+    | [event: 'complete'];
 
 export class WebsocketConnection {
     protected $id: string; // uniq connection id. does not change
 
-    protected $channels!: Set<string>;  // normalized channels
-    protected $ws_endpoints!: Array<string>;  // normalized websocket endpoints
-    protected $snapshot_endpoints!: Array<string>;    // normalized snapshot endpoints
+    protected $channels!: Set<string>; // normalized channels
+    protected $ws_endpoints!: Array<string>; // normalized websocket endpoints
+    protected $snapshot_endpoints!: Array<string>; // normalized snapshot endpoints
 
     protected $connection_index = 0;
     protected $connection_subscription: Subscription;
-    protected $connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS;    // default connection parameters
-    protected $connection: WebSocketSubject<ClientMessage<unknown>>;    // active connection
+    protected $connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS; // default connection parameters
+    protected $connection: WebSocketSubject<ClientMessage<unknown>>; // active connection
 
-    protected $events = new Subject<WebsocketConnectionEvent>();    // event stream
+    protected $events = new Subject<WebsocketConnectionEvent>(); // event stream
 
     protected normalize_endpoints(options: WebsocketConnectionOptions, protocol: string, path_suffix = '/ws'): Array<string> {
-        const endpoints = (Array.isArray(options.endpoints) ?
-            options.endpoints :
-            options.endpoints.split(",")).map((value => value.trim()));
+        const endpoints = (Array.isArray(options.endpoints) ? options.endpoints : options.endpoints.split(',')).map(value => value.trim());
 
         const result = new Set<string>();
 
@@ -79,7 +77,7 @@ export class WebsocketConnection {
 
             // ensure suffix is correct
             if (!output.endsWith(path_suffix)) {
-                output += path_suffix
+                output += path_suffix;
             }
 
             // pass api details directly
@@ -109,7 +107,10 @@ export class WebsocketConnection {
         return new Set(channels.split(',').map(channel => channel.trim()));
     }
 
-    constructor(public options: WebsocketConnectionOptions, public connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS) {
+    constructor(
+        public options: WebsocketConnectionOptions,
+        public connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS,
+    ) {
         this.$id = ulid();
         this.$connection_params = connection_params;
         this.$channels = this.normalize_channels(options.channels);
@@ -136,44 +137,43 @@ export class WebsocketConnection {
                 return new TextEncoder().encode(JSON.stringify(value));
             },
             deserializer: (msg: MessageEvent<ArrayBuffer>): ClientMessage<unknown> => {
-                return plainToInstance(
-                    ClientMessage<unknown>,
-                    JSON.parse(new TextDecoder().decode(msg.data))
-                );
-            }
+                return plainToInstance(ClientMessage<unknown>, JSON.parse(new TextDecoder().decode(msg.data)));
+            },
         };
 
         return webSocket(options);
     }
 
     protected subscribe_to_connection() {
-        this.$connection_subscription = this.$connection.pipe(
-            retry({
-                // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-                delay: (error: any, retryCount: number) => {
-                    if (retryCount > this.connection_params.retryTimeout) {
-                        return throwError(() => error);
-                    }
+        this.$connection_subscription = this.$connection
+            .pipe(
+                retry({
+                    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                    delay: (error: any, retryCount: number) => {
+                        if (retryCount > this.connection_params.retryTimeout) {
+                            return throwError(() => error);
+                        }
 
-                    if (this.$ws_endpoints.length > 1) {
-                        this.connect();
-                    }
+                        if (this.$ws_endpoints.length > 1) {
+                            this.connect();
+                        }
 
-                    return timer(retryCount * this.connection_params.retryTimeout);
+                        return timer(retryCount * this.connection_params.retryTimeout);
+                    },
+                    resetOnSuccess: true,
+                }),
+            )
+            .subscribe({
+                next: data => {
+                    this.$events.next(['data', data]);
                 },
-                resetOnSuccess: true,
-            })
-        ).subscribe({
-            next: data => {
-                this.$events.next(['data', data]);
-            },
-            error: err => {
-                this.$events.next(['error', err]);
-            },
-            complete: () => {
-                this.$events.next(['complete']);
-            },
-        });
+                error: err => {
+                    this.$events.next(['error', err]);
+                },
+                complete: () => {
+                    this.$events.next(['complete']);
+                },
+            });
     }
 
     connect() {
@@ -181,16 +181,16 @@ export class WebsocketConnection {
             this.$connection_subscription.unsubscribe();
         }
         this.$connection = this.create_connection();
-        this.subscribe_to_connection();        
+        this.subscribe_to_connection();
     }
 
     eventStream(): Observable<WebsocketConnectionEvent> {
-        return this.$events.asObservable()
+        return this.$events.asObservable();
     }
 
     dataStream<T = unknown>(): Observable<ClientMessage<T>> {
         return this.eventStream().pipe(
-            filter((message) => message[0] === 'data'),
+            filter(message => message[0] === 'data'),
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             map<WebsocketConnectionEvent, ClientMessage<T>>(([, data]: WebsocketConnectionEvent) => {
                 return data as ClientMessage<T>;
@@ -199,9 +199,7 @@ export class WebsocketConnection {
     }
 
     channelStream<T = unknown>(channel: string): Observable<ClientMessage<T>> {
-        return this.dataStream<T>().pipe(
-            filter((data) => data.get_channel() === channel),
-        );
+        return this.dataStream<T>().pipe(filter(data => data.get_channel() === channel));
     }
 
     fetchSnapshot<T = unknown>(): Observable<T> {
@@ -213,9 +211,9 @@ export class WebsocketConnection {
                     // biome-ignore lint/style/noUselessElse: <explanation>
                 } else {
                     // Server is returning a status requiring the client to try something else.
-                    return of({ error: true, message: `Error ${ response.status }`, response });
+                    return of({ error: true, message: `Error ${response.status}`, response });
                 }
-            })
+            }),
         );
     }
 
@@ -241,5 +239,4 @@ export class WebsocketConnection {
     getId(): string {
         return this.$id;
     }
-
 }
