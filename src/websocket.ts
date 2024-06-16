@@ -87,7 +87,9 @@ export class WebsocketConnection {
             output += `&api_host=${options.apiHost}`;
 
             // channels are already normalized
-            output += `&channels=${Array.from(this.$channels).map((channel) => encodeURIComponent(channel)).join(',')}`;
+            output += `&channels=${Array.from(this.$channels)
+                .map(channel => encodeURIComponent(channel))
+                .join(',')}`;
 
             if (typeof options.snapshot !== 'undefined') {
                 output += `&snapshot=${options.snapshot}`;
@@ -209,7 +211,7 @@ export class WebsocketConnection {
     }
 
     channelStream<T = unknown>(channel: string): Observable<ClientMessage<T>> {
-        return this.dataStream<T>().pipe(filter(data => data.get_channel() === channel));
+        return this.dataStream<T>().pipe(filter(data => channel.startsWith(data.get_channel())));
     }
 
     fetchSnapshot<T = unknown>(): Observable<T> {
