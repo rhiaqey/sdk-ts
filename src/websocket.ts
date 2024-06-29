@@ -214,8 +214,14 @@ export class WebsocketConnection {
         return this.dataStream<T>().pipe(filter(data => channel.startsWith(data.get_channel())));
     }
 
+    generateSnapshotEndpoint(): string {
+        let endpoint = this.$snapshot_endpoints[this.$connection_index % this.$ws_endpoints.length];
+        endpoint += `&_=${Date.now()}`;
+        return endpoint;
+    }
+
     fetchSnapshot<T = unknown>(): Observable<T> {
-        return fromFetch(this.$snapshot_endpoints[this.$connection_index % this.$ws_endpoints.length]).pipe(
+        return fromFetch(this.generateSnapshotEndpoint()).pipe(
             switchMap(response => {
                 if (response.ok) {
                     // OK return data
