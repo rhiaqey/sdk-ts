@@ -39,6 +39,21 @@ export class ClientMessage<T = unknown> {
         return this.chn;
     }
 
+    get_channel_parts(): [ string, string?, string? ] {
+        const parts = this.chn.split("/");
+
+        if (parts.length === 3) 
+            return [ parts[0], parts[1], parts[2] ];
+
+        if (parts.length === 2)
+            return [ parts[0], parts[1], undefined ];
+
+        if (parts.length === 1)
+            return [ parts[0], undefined, undefined ];
+
+        return [ undefined, undefined, undefined ];
+    }
+
     get_key(): string {
         return this.key;
     }
