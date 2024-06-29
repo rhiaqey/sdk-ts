@@ -219,9 +219,11 @@ export class WebsocketConnection {
     channelStream<T = unknown>(channel: string): Observable<ClientMessage<T>> {
         return this.dataStream<T>().pipe(            
             filter(message => message.is_data_type()),
-            filter(data => {
-                const [ message_channel ] = data.get_channel_parts();
-                return typeof message_channel !== 'undefined' && channel === message_channel
+            filter(message => {
+                const [ message_channel ] = message.get_channel_parts();
+                return typeof channel !== 'undefined' && 
+                    typeof message_channel !== 'undefined' &&
+                    channel.startsWith(message_channel)
             })
         );
     }
