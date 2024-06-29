@@ -131,9 +131,15 @@ export class WebsocketConnection {
         this.$events.next(['ready']);
     }
 
+    protected generateWebSocketEndpoint(): string {
+        let endpoint = this.$ws_endpoints[this.$connection_index++ % this.$ws_endpoints.length];
+        endpoint += `&_=${Date.now()}`;
+        return endpoint;
+    }
+
     protected create_connection() {
         const options: WebSocketSubjectConfig<ClientMessage<unknown>> = {
-            url: this.$ws_endpoints[this.$connection_index++ % this.$ws_endpoints.length],
+            url: this.generateWebSocketEndpoint(),
             binaryType: 'arraybuffer',
             openObserver: {
                 next: (event: Event) => {
@@ -214,8 +220,8 @@ export class WebsocketConnection {
         return this.dataStream<T>().pipe(filter(data => channel.startsWith(data.get_channel())));
     }
 
-    generateSnapshotEndpoint(): string {
-        let endpoint = this.$snapshot_endpoints[this.$connection_index % this.$ws_endpoints.length];
+    protected generateSnapshotEndpoint(): string {
+        let endpoint = this.$snapshot_endpoints[this.$connection_index % this.$snapshot_endpoints.length];
         endpoint += `&_=${Date.now()}`;
         return endpoint;
     }
