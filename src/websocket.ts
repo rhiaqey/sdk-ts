@@ -218,7 +218,7 @@ export class WebsocketConnection {
 
     channelStream<T = unknown>(channel: string): Observable<ClientMessage<T>> {
         return this.dataStream<T>().pipe(            
-            filter(message => message.is_data_type()),
+            filter(message => message.is_subscribed_type() || message.is_data_type()),
             filter(message => {
                 const [ message_channel ] = message.get_channel_parts();
                 return typeof channel !== 'undefined' && 
