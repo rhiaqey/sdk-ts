@@ -252,7 +252,7 @@ export class WebsocketConnection {
         );
     }
 
-    async fetchSnapshotPromised<T = unknown>(timeoutInMilliseconds: number): Promise<T> {
+    async fetchSnapshotPromised<T = unknown>(timeoutInMilliseconds?: number): Promise<T> {
         return firstValueFrom(this.fetchSnapshot<T>(timeoutInMilliseconds));
     }
 
