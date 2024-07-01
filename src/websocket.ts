@@ -5,7 +5,7 @@ import { type Observable, Subject, filter, map, throwError, timer, of, type Subs
 import { fromFetch } from 'rxjs/fetch';
 
 import { plainToInstance } from 'class-transformer';
-import { retry, switchMap } from 'rxjs/operators';
+import { retry, switchMap, takeUntil } from 'rxjs/operators';
 
 if (typeof process !== 'undefined' && process.release.name === 'node') {
     Object.assign(global, { WebSocket: require('ws') });
@@ -27,6 +27,8 @@ export type WebsocketConnectParams = {
     pingTimeout: number;
     retryTimeout: number;
 };
+
+const DEFAULT_SNAPSHOT_REQUEST_TIMEOUT = 10000;
 
 const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
     maxRetryAttempts: Number.POSITIVE_INFINITY,
@@ -234,7 +236,7 @@ export class WebsocketConnection {
         return endpoint;
     }
 
-    fetchSnapshot<T = unknown>(): Observable<T> {
+    fetchSnapshot<T = unknown>(timeoutInMilliseconds?: number): Observable<T> {
         return fromFetch(this.generateSnapshotEndpoint()).pipe(
             switchMap(response => {
                 if (response.ok) {
@@ -246,11 +248,12 @@ export class WebsocketConnection {
                     return of({ error: true, message: `Error ${response.status}`, response });
                 }
             }),
+            takeUntil(timer(timeoutInMilliseconds ?? DEFAULT_SNAPSHOT_REQUEST_TIMEOUT))
         );
     }
 
-    async fetchSnapshotPromised<T = unknown>(): Promise<T> {
-        return firstValueFrom(this.fetchSnapshot<T>());
+    async fetchSnapshotPromised<T = unknown>(timeoutInMilliseconds: number): Promise<T> {
+        return firstValueFrom(this.fetchSnapshot<T>(timeoutInMilliseconds));
     }
 
     close() {
