@@ -1,6 +1,6 @@
 {
     "name": "@rhiaqey/sdk-ts",
-    "version": "1.0.56",
+    "version": "1.0.57",
     "description": "Rhiaqey SDK for clients",
     "main": "dist/umd/sdk.js",
     "types": "dist/types/index.d.ts",
