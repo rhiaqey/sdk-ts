@@ -28,9 +28,9 @@ export type WebsocketConnectParams = {
     retryTimeout: number;
 };
 
-const DEFAULT_SNAPSHOT_REQUEST_TIMEOUT = 10000;
+export const DEFAULT_SNAPSHOT_REQUEST_TIMEOUT = 10000;
 
-const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
+export const DEFAULT_WEBSOCKET_CONNECT_PARAMS: WebsocketConnectParams = {
     maxRetryAttempts: Number.POSITIVE_INFINITY,
     pingTimeout: 2000,
     retryTimeout: 2000,
