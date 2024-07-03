@@ -3,7 +3,7 @@ import { ClientMessage } from './message';
 import { ulid } from 'ulidx';
 import { type Observable, Subject, filter, map, throwError, timer, of, type Subscription, firstValueFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
-
+import { encode, decode } from "@msgpack/msgpack";
 import { plainToInstance } from 'class-transformer';
 import { retry, switchMap, takeUntil } from 'rxjs/operators';
 
@@ -20,6 +20,7 @@ export type WebsocketConnectionOptions = {
     snapshot_size?: number;
     user_id?: string;
     env?: 'dev' | 'prod';
+    encoding?: 'json' | 'msgpack'
 };
 
 export type WebsocketConnectParams = {
@@ -50,6 +51,8 @@ export class WebsocketConnection {
     protected $channels!: Set<string>; // normalized channels
     protected $ws_endpoints!: Array<string>; // normalized websocket endpoints
     protected $snapshot_endpoints!: Array<string>; // normalized snapshot endpoints
+
+    protected $encoding: 'json' | 'msgpack';
 
     protected $connection_index = 0;
     protected $connection_subscription: Subscription;
@@ -130,6 +133,7 @@ export class WebsocketConnection {
         this.$channels = this.normalize_channels(options.channels);
         this.$ws_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'ws://' : 'wss://', '/ws');
         this.$snapshot_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'http://' : 'https://', '/snapshot');
+        this.$encoding = options.encoding || 'json';
         this.$events.next(['ready']);
     }
 
@@ -154,9 +158,17 @@ export class WebsocketConnection {
                 },
             },
             serializer: (value: ClientMessage<unknown>) => {
+                if (this.$encoding === 'msgpack') {
+                    return encode(value);
+                }
+
                 return new TextEncoder().encode(JSON.stringify(value));
             },
             deserializer: (msg: MessageEvent<ArrayBuffer>): ClientMessage<unknown> => {
+                if (this.$encoding === 'msgpack') {
+                    return plainToInstance(ClientMessage<unknown>, decode(msg.data));
+                }
+
                 return plainToInstance(ClientMessage<unknown>, JSON.parse(new TextDecoder().decode(msg.data)));
             },
         };
