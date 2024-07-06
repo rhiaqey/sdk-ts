@@ -33,16 +33,37 @@ export class ClientMessage<T = unknown> {
     protected hid?: string;                 // a.k.a    h
     protected pid?: string;                 // a.k.a    p
 
+    // smaller alternatives
+
+    // required
+    protected d!: ClientMessageType;        // a.k.a    typ
+    protected c!: string;                   // a.k.a    chn
+    protected k!: string;                   // a.k.a    key
+    protected v!: T;                        // a.k.a    val
+    // optional
+    protected t?: string;                   // a.k.a    tag
+    protected g?: string;                   // a.k.a    cat
+    protected h?: string;                   // a.k.a    hid
+    protected p?: string;                   // a.k.a    pid
+
     get_type(): ClientMessageType {
-        return this.typ;
+        return this.typ || this.d;
     }
 
     get_channel(): string {
-        return this.chn;
+        return this.chn || this.c;
+    }
+
+    get_key(): string {
+        return this.key || this.k;
+    }
+
+    get_value(): T {
+        return this.val || this.v;
     }
 
     get_channel_parts(): [ string, string?, string? ] {
-        const parts = this.chn.split("/");
+        const parts = this.get_channel().split("/");
 
         if (parts.length === 3) 
             return [ parts[0], parts[1], parts[2] ];
@@ -56,24 +77,16 @@ export class ClientMessage<T = unknown> {
         return [ undefined, undefined, undefined ];
     }
 
-    get_key(): string {
-        return this.key;
-    }
-
-    get_value(): T {
-        return this.val;
-    }
-
-    has_tag(): boolean {
-        return !!this.tag;
-    }
-
     get_tag(): string | undefined {
-        return this.tag;
+        return this.tag || this.t;
     }
 
     get_category(): string | undefined {
-        return this.cat;
+        return this.cat || this.g;
+    }
+
+    has_tag(): boolean {
+        return !!this.get_tag();
     }
 
     is_connected_type(): boolean {
