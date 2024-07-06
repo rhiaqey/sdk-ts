@@ -52,7 +52,7 @@ export class WebsocketConnection {
     protected $ws_endpoints!: Array<string>; // normalized websocket endpoints
     protected $snapshot_endpoints!: Array<string>; // normalized snapshot endpoints
 
-    protected $encoding: 'json' | 'msgpack';
+    protected $encoding!: 'json' | 'msgpack';
 
     protected $connection_index = 0;
     protected $connection_subscription: Subscription;
@@ -133,7 +133,7 @@ export class WebsocketConnection {
         this.$channels = this.normalize_channels(options.channels);
         this.$ws_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'ws://' : 'wss://', '/ws');
         this.$snapshot_endpoints = this.normalize_endpoints(options, options.env === 'dev' ? 'http://' : 'https://', '/snapshot');
-        this.$encoding = options.encoding || 'json';
+        this.$encoding = options.encoding ?? 'json';
         this.$events.next(['ready']);
     }
 

@@ -23,13 +23,15 @@ export type ClientSubscribedMessage = {
 
 export class ClientMessage<T = unknown> {
     // required
-    protected typ!: ClientMessageType;
-    protected chn!: string;
-    protected key!: string;
-    protected val!: T;
+    protected typ!: ClientMessageType;      // a.k.a    d
+    protected chn!: string;                 // a.k.a    c
+    protected key!: string;                 // a.k.a    k
+    protected val!: T;                      // a.k.a    v
     // optional
-    protected tag?: string;
-    protected cat?: string;
+    protected tag?: string;                 // a.k.a    t
+    protected cat?: string;                 // a.k.a    g
+    protected hid?: string;                 // a.k.a    h
+    protected pid?: string;                 // a.k.a    p
 
     get_type(): ClientMessageType {
         return this.typ;
