@@ -54,7 +54,9 @@ export class WebsocketConnection {
 
     protected $encoding!: 'json' | 'msgpack';
 
-    protected $connection_index = 0;
+    protected $websocket_connection_index = 0;
+    protected $http_snapshot_connection_index_index = 0;
+
     protected $connection_subscription: Subscription;
     protected $connection_params = DEFAULT_WEBSOCKET_CONNECT_PARAMS; // default connection parameters
     protected $connection: WebSocketSubject<ClientMessage<unknown>>; // active connection
@@ -138,7 +140,7 @@ export class WebsocketConnection {
     }
 
     protected generateWebSocketEndpoint(): string {
-        let endpoint = this.$ws_endpoints[this.$connection_index++ % this.$ws_endpoints.length];
+        let endpoint = this.$ws_endpoints[this.$websocket_connection_index++ % this.$ws_endpoints.length];
         endpoint += `&_=${Date.now()}`;
         return endpoint;
     }
@@ -243,7 +245,7 @@ export class WebsocketConnection {
     }
 
     protected generateSnapshotEndpoint(): string {
-        let endpoint = this.$snapshot_endpoints[this.$connection_index % this.$snapshot_endpoints.length];
+        let endpoint = this.$snapshot_endpoints[this.$http_snapshot_connection_index_index++ % this.$snapshot_endpoints.length];
         endpoint += `&_=${Date.now()}`;
         return endpoint;
     }
