@@ -29,7 +29,7 @@
         "@babel/plugin-transform-typescript": "^7.25.2",
         "@babel/polyfill": "^7.12.1",
         "@babel/preset-env": "^7.25.3",
-        "@types/jest": "^29.5.12",
+        "@types/jest": "^30.0.0",
         "@types/ws": "8.5.4",
         "@typescript-eslint/eslint-plugin": "^8.0.1",
         "@typescript-eslint/parser": "^8.0.1",
